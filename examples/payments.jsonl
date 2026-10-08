@@ -1,0 +1,4 @@
+{"event":"payment_succeeded","order":"demo-101","entitlement":"active"}
+{"event":"payment_succeeded","order":"demo-102","entitlement":"missing"}
+{"event":"payment_failed","order":"demo-103","entitlement":"missing"}
+{"event":"customer_report","order":"demo-104","message":"Charged successfully but my account is still on the free plan."}

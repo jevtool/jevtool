@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task": "Reject whitespace-only passwords, add regression coverage, keep page styles unchanged.",
+  "base": "HEAD",
+  "criteria": [
+    {
+      "id": "login",
+      "kind": "judgment",
+      "description": "Whitespace-only passwords are rejected by the login implementation.",
+      "paths": ["src/login.js"],
+      "tests": ["login-tests"]
+    },
+    {
+      "id": "regression",
+      "kind": "changed",
+      "description": "Add or update the login regression test file.",
+      "paths": ["test/login.test.js"]
+    },
+    {
+      "id": "styles",
+      "kind": "unchanged",
+      "description": "Keep CSS files unchanged.",
+      "paths": ["**/*.css"]
+    }
+  ],
+  "tests": [
+    { "id": "login-tests", "command": ["node", "--test", "test/login.test.js"], "timeoutMs": 30000 }
+  ]
+}
