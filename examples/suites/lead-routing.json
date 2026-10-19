@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "name": "lead-routing",
+  "description": "Sales: route inbound leads to a sales call, self-serve, nurture or disqualify.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "route": {
+      "type": "choice",
+      "instructions": "Given `product`, where should the inbound message in `lead` go?",
+      "criteria": {
+        "sales_call": "A qualified team that needs sales: above 50 engineers, a security review, or a near-term large rollout.",
+        "self_serve": "A qualified small team or individual who can sign up and pay alone.",
+        "nurture": "A potential fit with no near-term buying intent; send content and follow up later.",
+        "disqualify": "Not a buyer: wrong platform, students, vendors pitching us, resellers, or spam."
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "l1",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "We're 120 engineers on GitHub, our Jenkins setup is falling over. Need SOC 2 docs and pricing for a rollout this quarter."
+      },
+      "expect": {
+        "route": "sales_call"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l2",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "Solo dev here, just want faster builds for my side project. Is there a free tier?"
+      },
+      "expect": {
+        "route": "self_serve"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l3",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "Our 8-person startup uses GitHub Actions but builds take 25 min. Can I just sign up with a card?"
+      },
+      "expect": {
+        "route": "self_serve"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l4",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "I'm a student writing a thesis on CI tools, could you answer a few survey questions?"
+      },
+      "expect": {
+        "route": "disqualify"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l5",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "We use GitLab self-hosted and have no plans to move. Do you support it?"
+      },
+      "expect": {
+        "route": "disqualify"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l6",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "Head of Platform at a 70-engineer fintech. Evaluating vendors for next year, no rush, can you send a deck?"
+      },
+      "expect": {
+        "route": "nurture"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l7",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "We are an SEO agency and can get you 10x traffic, interested?"
+      },
+      "expect": {
+        "route": "disqualify"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l8",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "CTO, 40 engineers, GitHub. Our CI bill just doubled and I need an alternative before our renewal in 3 weeks."
+      },
+      "expect": {
+        "route": [
+          "sales_call",
+          "self_serve"
+        ]
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l9",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "Just curious how your caching works, not looking to buy anything right now."
+      },
+      "expect": {
+        "route": "nurture"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l10",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "VP Eng at a 300-person company on GitHub. Security team needs a vendor questionnaire filled before we can trial."
+      },
+      "expect": {
+        "route": "sales_call"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "l11",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "我们团队15个工程师，用GitHub，构建太慢了，想直接试用，怎么付费？"
+      },
+      "expect": {
+        "route": "self_serve"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "l12",
+      "state": {
+        "product": "FastCI: hosted CI for teams of 5–200 engineers on GitHub. Self-serve plans from $50/month; sales handles teams above 50 engineers or security reviews.",
+        "lead": "你好，我们是做外包的，能不能代理你们的产品在国内销售？"
+      },
+      "expect": {
+        "route": "disqualify"
+      },
+      "tags": [
+        "zh"
+      ]
+    }
+  ]
+}

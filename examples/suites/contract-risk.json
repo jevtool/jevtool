@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "name": "contract-risk",
+  "description": "Legal: flag auto-renewal, uncapped liability and one-sided change clauses.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "auto_renewal": {
+      "type": "noul",
+      "instructions": "Does `clause` make the contract or subscription renew or continue automatically unless someone acts to stop it?"
+    },
+    "unlimited_liability": {
+      "type": "noul",
+      "instructions": "Does `clause` leave the customer exposed to liability or indemnity with no cap, beyond carve-outs limited to fraud, gross negligence or willful misconduct?"
+    },
+    "unilateral_change": {
+      "type": "noul",
+      "instructions": "Does `clause` let the vendor change terms, prices or services without the customer signing an amendment?"
+    }
+  },
+  "cases": [
+    {
+      "id": "k1",
+      "state": {
+        "clause": "This Agreement renews automatically for successive one-year terms unless either party gives written notice of non-renewal at least 60 days before the end of the then-current term."
+      },
+      "expect": {
+        "auto_renewal": true,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k2",
+      "state": {
+        "clause": "Customer's total liability under this Agreement shall not exceed the fees paid in the twelve months preceding the claim."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k3",
+      "state": {
+        "clause": "Customer shall indemnify Vendor against any and all losses, without limitation, arising out of Customer's use of the Service."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": true,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k4",
+      "state": {
+        "clause": "Vendor may modify these Terms at any time by posting the revised Terms on its website; continued use constitutes acceptance."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k5",
+      "state": {
+        "clause": "Any amendment to this Agreement must be in writing and signed by authorized representatives of both parties."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k6",
+      "state": {
+        "clause": "The initial term is 24 months. Thereafter the parties may agree in writing to extend this Agreement."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k7",
+      "state": {
+        "clause": "Vendor reserves the right to change pricing upon 30 days' notice, and Customer may terminate if it does not accept the new pricing."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k8",
+      "state": {
+        "clause": "Nothing in this Agreement limits either party's liability for gross negligence, fraud, or willful misconduct."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k9",
+      "state": {
+        "clause": "Subscriptions continue month to month until cancelled by the Customer through the account dashboard."
+      },
+      "expect": {
+        "auto_renewal": true,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k10",
+      "state": {
+        "clause": "The limitations of liability in Section 9 shall not apply to Customer's payment obligations or to Customer's breach of Section 4 (Acceptable Use), for which Customer shall be liable for all resulting damages."
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": true,
+        "unilateral_change": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "k11",
+      "state": {
+        "clause": "本合同期满后自动续展一年，除非任一方在期满前三十日书面通知对方不再续约。"
+      },
+      "expect": {
+        "auto_renewal": true,
+        "unlimited_liability": false,
+        "unilateral_change": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "k12",
+      "state": {
+        "clause": "服务商有权根据业务需要随时调整服务内容及收费标准，调整后的条款自公布之日起生效。"
+      },
+      "expect": {
+        "auto_renewal": false,
+        "unlimited_liability": false,
+        "unilateral_change": true
+      },
+      "tags": [
+        "zh"
+      ]
+    }
+  ]
+}

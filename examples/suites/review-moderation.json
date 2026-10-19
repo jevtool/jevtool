@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "name": "review-moderation",
+  "description": "E-commerce: publish, hide or escalate product reviews under a store policy.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "action": {
+      "type": "choice",
+      "instructions": "Apply the store's review policy to `review`. What should happen to it?",
+      "criteria": {
+        "publish": "An honest experience with the product, seller or delivery, including harsh negative opinions and very short reviews.",
+        "hide": "Contains personal contact details or addresses, threats or slurs, advertising or links, admits being paid or rewarded, or reviews a product the writer has not received.",
+        "review": "Serious factual accusations against the brand that a person should check before publishing."
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "v1",
+      "state": {
+        "review": "Battery lasts two full days, the strap is a bit stiff at first. 4 stars."
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v2",
+      "state": {
+        "review": "Absolute garbage. Broke after a week and support ignored me. Do NOT buy."
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v3",
+      "state": {
+        "review": "Great watch! Call me at 415-555-0199 if you want to buy mine used."
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v4",
+      "state": {
+        "review": "Got this for free in exchange for a 5-star review. Love it!!!"
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v5",
+      "state": {
+        "review": "The seller is a scammer and an idiot, hope his shop burns down."
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v6",
+      "state": {
+        "review": "Works fine. Also check out my YouTube channel for crypto tips!"
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v7",
+      "state": {
+        "review": "Shipping took 3 weeks, which was annoying, but the product itself is solid."
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v8",
+      "state": {
+        "review": "I haven't received it yet but I'm sure it'll be great, 5 stars."
+      },
+      "expect": {
+        "action": [
+          "hide",
+          "review"
+        ]
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v9",
+      "state": {
+        "review": "Wrong size in the photos — the 42mm looks bigger online. Returned it."
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v10",
+      "state": {
+        "review": "This brand uses child labor according to a report I read somewhere."
+      },
+      "expect": {
+        "action": "review"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v11",
+      "state": {
+        "review": "表带质量一般，但是续航真的很强，推荐。"
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "v12",
+      "state": {
+        "review": "好评返现5元，大家都给五星吧！"
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "v13",
+      "state": {
+        "review": "My husband John Miller at 22 Oak St wears it daily and loves it."
+      },
+      "expect": {
+        "action": "hide"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "v14",
+      "state": {
+        "review": "Meh."
+      },
+      "expect": {
+        "action": "publish"
+      },
+      "tags": [
+        "en"
+      ]
+    }
+  ]
+}

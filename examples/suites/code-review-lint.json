@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "name": "code-review-lint",
+  "description": "Engineering: flag swallowed errors, logged secrets and misleading commit messages.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "swallows_error": {
+      "type": "noul",
+      "instructions": "Does `diff` add code that catches an error and then neither logs it, rethrows it, nor handles it in a meaningful way?"
+    },
+    "logs_secret": {
+      "type": "noul",
+      "instructions": "Does `diff` add logging that could write a password, API key, token, full card number or authorization header to logs?",
+      "criteria": {
+        "true": "the logged value can contain such a secret",
+        "false": "nothing secret is logged, or it is masked"
+      }
+    },
+    "message_matches": {
+      "type": "noul",
+      "instructions": "Does `commit_message` honestly describe everything `diff` changes, without hiding an unrelated change?"
+    }
+  },
+  "cases": [
+    {
+      "id": "c1",
+      "state": {
+        "commit_message": "Add retry to payment client",
+        "diff": "+ try {\n+   await charge(order)\n+ } catch (e) {\n+   // ignore\n+ }"
+      },
+      "expect": {
+        "swallows_error": true,
+        "logs_secret": false,
+        "message_matches": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c2",
+      "state": {
+        "commit_message": "Log failed logins",
+        "diff": "+ logger.warn({ user: req.body.email, password: req.body.password }, 'login failed')"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": true,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c3",
+      "state": {
+        "commit_message": "Fix typo in README",
+        "diff": "- Instal the CLI\n+ Install the CLI"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c4",
+      "state": {
+        "commit_message": "Fix typo in README",
+        "diff": "- const TIMEOUT = 5000\n+ const TIMEOUT = 50000\n- Instal the CLI\n+ Install the CLI"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c5",
+      "state": {
+        "commit_message": "Handle missing config file",
+        "diff": "+ try {\n+   cfg = readConfig()\n+ } catch (e) {\n+   logger.error({ err: e }, 'config unreadable, using defaults')\n+   cfg = DEFAULTS\n+ }"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c6",
+      "state": {
+        "commit_message": "Debug Stripe webhook",
+        "diff": "+ console.log('stripe key', process.env.STRIPE_SECRET_KEY)"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": true,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c7",
+      "state": {
+        "commit_message": "Add user avatar upload",
+        "diff": "+ app.post('/avatar', upload.single('file'), async (req, res) => {\n+   const url = await storage.put(req.file)\n+   res.json({ url })\n+ })"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c8",
+      "state": {
+        "commit_message": "Refactor date helpers",
+        "diff": "+ fetchUser(id).catch(() => null)"
+      },
+      "expect": {
+        "swallows_error": true,
+        "logs_secret": false,
+        "message_matches": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c9",
+      "state": {
+        "commit_message": "Mask card numbers in logs",
+        "diff": "+ logger.info({ card: '**** ' + card.slice(-4) }, 'charged')"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c10",
+      "state": {
+        "commit_message": "Add request logging",
+        "diff": "+ logger.info({ headers: req.headers }, 'incoming request')"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": true,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "c11",
+      "state": {
+        "commit_message": "修复登录接口的空密码校验",
+        "diff": "+ if (!password || !password.trim()) {\n+   return res.status(400).json({ error: 'password required' })\n+ }"
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "c12",
+      "state": {
+        "commit_message": "Bump lodash to 4.17.21",
+        "diff": "- \"lodash\": \"4.17.15\"\n+ \"lodash\": \"4.17.21\""
+      },
+      "expect": {
+        "swallows_error": false,
+        "logs_secret": false,
+        "message_matches": true
+      },
+      "tags": [
+        "en"
+      ]
+    }
+  ]
+}

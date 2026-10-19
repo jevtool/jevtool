@@ -1,0 +1,397 @@
+{
+  "version": 1,
+  "name": "support-triage",
+  "description": "Customer support: route emails to cancel, refund, billing, bug or how-to, and flag chargeback threats.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "category": {
+      "type": "choice",
+      "instructions": "What does the customer who wrote `email` mainly want from support?",
+      "criteria": {
+        "cancel": "Stop the subscription or auto-renewal, now or at period end.",
+        "refund": "Get money back for a specific charge that has already happened, or reverse that charge.",
+        "billing": "Invoices, payment methods, failed payments, plan prices, plan changes, or general questions about the refund policy with no specific charge to reverse.",
+        "bug": "Something in the product is broken, erroring, stuck or behaving wrongly.",
+        "howto": "Learn how to do something with the product or account.",
+        "other": "Anything else: praise, jobs, marketing-email opt-out, data deletion, complaints about support itself."
+      }
+    },
+    "escalate": {
+      "type": "noul",
+      "instructions": "Does `email` threaten a chargeback, a bank dispute, a regulator complaint, legal action or a public complaint?",
+      "criteria": {
+        "true": "explicitly threatens one of these",
+        "false": "no such threat, even if the customer is unhappy"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "s1",
+      "state": {
+        "email": "Please cancel my subscription before the next renewal, I don't use it anymore."
+      },
+      "expect": {
+        "category": "cancel",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s2",
+      "state": {
+        "email": "I was charged $29 twice this month. Please refund one of them."
+      },
+      "expect": {
+        "category": "refund",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s3",
+      "state": {
+        "email": "How do I export my website so I can host it on my own domain?"
+      },
+      "expect": {
+        "category": "howto",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s4",
+      "state": {
+        "email": "The PPT generation keeps spinning forever and never finishes. Tried 3 times."
+      },
+      "expect": {
+        "category": "bug",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s5",
+      "state": {
+        "email": "Can I get an invoice with my company VAT number on it?"
+      },
+      "expect": {
+        "category": "billing",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s6",
+      "state": {
+        "email": "Your product is amazing, just wanted to say thanks!"
+      },
+      "expect": {
+        "category": "other",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s7",
+      "state": {
+        "email": "I didn't authorize this charge. Give me my money back or I'll dispute it with my bank."
+      },
+      "expect": {
+        "category": "refund",
+        "escalate": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s8",
+      "state": {
+        "email": "How do I turn off auto-renew? I want to keep using it until the end of the month though."
+      },
+      "expect": {
+        "category": "cancel",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s9",
+      "state": {
+        "email": "Website preview shows a blank white page after the last update."
+      },
+      "expect": {
+        "category": "bug",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s10",
+      "state": {
+        "email": "What's the difference between the Pro and Max plans in terms of credits?"
+      },
+      "expect": {
+        "category": [
+          "billing",
+          "howto"
+        ],
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s11",
+      "state": {
+        "email": "Are you hiring? I'd love to work on your team."
+      },
+      "expect": {
+        "category": "other",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s12",
+      "state": {
+        "email": "Image generation failed but it still took 50 credits from my balance."
+      },
+      "expect": {
+        "category": [
+          "bug",
+          "billing"
+        ],
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s13",
+      "state": {
+        "email": "I signed up with the wrong email, how can I change it?"
+      },
+      "expect": {
+        "category": "howto",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s14",
+      "state": {
+        "email": "Unsubscribe me from your marketing emails, I get three a week."
+      },
+      "expect": {
+        "category": "other",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s15",
+      "state": {
+        "email": "My card got declined when upgrading, but my bank says everything is fine on their side."
+      },
+      "expect": {
+        "category": "billing",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s16",
+      "state": {
+        "email": "Delete my account and all my data please, under GDPR."
+      },
+      "expect": {
+        "category": [
+          "other",
+          "cancel"
+        ],
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s17",
+      "state": {
+        "email": "Can the agent connect to my Notion workspace?"
+      },
+      "expect": {
+        "category": "howto",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s18",
+      "state": {
+        "email": "I bought the annual plan by mistake, I meant monthly. Can you switch it and refund the difference?"
+      },
+      "expect": {
+        "category": [
+          "refund",
+          "billing"
+        ],
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s19",
+      "state": {
+        "email": "Error 502 every time I open the dashboard."
+      },
+      "expect": {
+        "category": "bug",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s20",
+      "state": {
+        "email": "Where is the button to cancel? I can't find it anywhere in settings."
+      },
+      "expect": {
+        "category": "cancel",
+        "escalate": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s21",
+      "state": {
+        "email": "This is the third time I'm writing. Nobody answers. I'm posting about this on Twitter and reporting you to the FTC."
+      },
+      "expect": {
+        "category": "other",
+        "escalate": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "s22",
+      "state": {
+        "email": "我想退订，下个月不要再扣钱了。"
+      },
+      "expect": {
+        "category": "cancel",
+        "escalate": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "s23",
+      "state": {
+        "email": "昨天被扣了两次费，麻烦退一次给我。"
+      },
+      "expect": {
+        "category": "refund",
+        "escalate": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "s24",
+      "state": {
+        "email": "生成的网站在手机上排版全乱了。"
+      },
+      "expect": {
+        "category": "bug",
+        "escalate": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "s25",
+      "state": {
+        "email": "请问怎么把生成的PPT导出成PDF？"
+      },
+      "expect": {
+        "category": "howto",
+        "escalate": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "s26",
+      "state": {
+        "email": "能开发票吗？需要公司抬头。"
+      },
+      "expect": {
+        "category": "billing",
+        "escalate": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "s27",
+      "state": {
+        "email": "充了钱一个都用不了，再不处理我就去投诉，还要找银行拒付。"
+      },
+      "expect": {
+        "category": [
+          "refund",
+          "bug"
+        ],
+        "escalate": true
+      },
+      "tags": [
+        "zh"
+      ]
+    }
+  ]
+}

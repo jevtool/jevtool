@@ -1,37 +1,64 @@
 # Jevtool CLI
 
-Check agent deliveries against an acceptance checklist, Git changes and real test results. Filter text or JSONL records by meaning with the same CLI.
+Test your Jev judgments before you ship them. Check agent deliveries against real test results. Filter records by meaning.
 
-**Status: local preview, 0.1.0.** The package is not published to npm. There is no hosted account, subscription or automatic agent hook yet. TypeSafe is the model provider; Jevtool is an independent application.
+Jev is TypeSafe's System One model: it returns typed answers with probabilities instead of text. Calling it takes five minutes. Knowing whether its answers are right for *your* data takes longer. `jevtool eval` runs your labeled cases through Jev and tells you the accuracy, which cases it misses, which confidence cutoff is safe to automate at, and which answers change when you switch model versions.
 
-Requires Node.js 20+ and Git. No runtime dependencies.
-
-## Try it now
-
-From this checkout:
+Requires Node.js 20+. Git is needed only for `verify`. No runtime dependencies. MIT licensed. Jevtool is an independent project and is not affiliated with TypeSafe AI.
 
 ```sh
-node bin/jevtool.mjs demo
+npm install -g jevtool        # or: npx jevtool ...
+export TYPESAFE_API_KEY=...   # from https://console.typesafe.ai
+jevtool eval --examples
+jevtool eval example:support-triage
 ```
 
-The demo creates an isolated temporary Git repository, executes a real test and catches an intentionally incomplete login fix: failing test, missing regression file and changed CSS. It needs no API key, sends no network request and removes its temporary repository afterward. A successful demo exits 0 even though its example delivery fails.
+## Evaluate a judgment
 
-Install this local directory:
+A suite is one JSON file: the questions you send to Jev, and cases with the answers you expect.
+
+```json
+{
+  "name": "support-triage",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "category": {
+      "type": "choice",
+      "instructions": "What does the customer who wrote `email` mainly want?",
+      "criteria": { "refund": "Money back for a specific past charge.", "howto": "Learn how to do something.", "other": "Anything else." }
+    },
+    "escalate": { "type": "noul", "instructions": "Does `email` threaten a chargeback or legal action?" }
+  },
+  "cases": [
+    { "id": "s1", "state": { "email": "Charged twice, refund one please." }, "expect": { "category": "refund", "escalate": false }, "tags": ["en"] },
+    { "id": "s2", "state": { "email": "Refund or I dispute it with my bank." }, "expect": { "category": "refund", "escalate": true } }
+  ]
+}
+```
+
+`expect` takes an option (or a list of acceptable options) for a Choice, `true`/`false` for a Noul, and a level index for a Score. Leave a question out of `expect`, or set it to `null`, to skip scoring it for that case. `tags` group accuracy, for example by language.
 
 ```sh
-npm install -g .
-jevtool --help
-jevtool demo
+jevtool eval my-suite.json
+jevtool eval my-suite.json --compare jev-1.14.0     # which answers change on the new version
+jevtool eval my-suite.json --order-check            # re-ask Choices with options reversed
+jevtool eval my-suite.json --min-accuracy 0.9 --json --output eval.json   # CI gate
+jevtool eval example:contract-risk --save my-suite.json                   # start from an example
 ```
 
-Or download the preview archive from jevtool.dev once the updated site is deployed:
+For each question the report shows accuracy, accuracy per tag, every miss with its certainty, and a suggested cutoff: the lowest certainty (Choice/Score confidence, or max(p, 1−p) for a Noul) at which the automatically handled cases still reach `target`. Cases below the cutoff are the ones to send to a person or a larger model. It also reports latency, input tokens per call and an estimated cost at list price.
 
-```sh
-npm install -g ./jevtool-cli-0.1.0.tgz
-jevtool demo
-```
+Ten example suites ship with the package: support triage, chat inbound guard, model routing, RAG fact-checking, entity matching, lead routing, review moderation, contract risk, code review lint and inbox triage. Their cases and labels are hand-written smoke tests, not benchmarks. Replace them with your own data.
 
-Do not use `npx @jevtool/cli` yet: registry publication has not happened.
+| Exit code | Eval |
+| --- | --- |
+| `0` | All requests answered, all questions at or above `--min-accuracy` |
+| `1` | At least one question below `--min-accuracy` |
+| `2` | Some requests failed; results are partial |
+| `3` | Configuration error or every request failed |
+
+**Data sent by `eval`:** each case's `state` and the suite's questions go to TypeSafe. Labels stay local.
 
 ## Check an agent delivery
 
@@ -139,16 +166,17 @@ npm run demo
 npm pack --dry-run
 ```
 
-Tests use isolated Git repositories and explicitly marked model fixtures. They exercise real subprocess exit codes, timeout handling, untracked/protected paths, snapshot invalidation, provider failures and uncertain filter results. They do not establish model accuracy on real deliveries. The initial implementation was verified without a live API key; a real Jev end-to-end run remains to be done.
+Tests use isolated Git repositories and explicitly marked model fixtures. They exercise real subprocess exit codes, timeout handling, untracked/protected paths, snapshot invalidation, provider failures and uncertain filter results. They do not establish model accuracy on real deliveries. `eval` was also run end to end against the live API on jev-1.13.0 and jev-1.14.0 (2026-10-19).
 
 Official API contract: [TypeSafe API reference](https://docs.typesafe.ai/api). Known model boundaries: [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13).
 
 ## 中文快速说明
 
+- `eval`：用带标准答案的测试集跑 Jev，给出准确率、错例、建议置信度阈值，以及换模型版本后哪些答案变了；需要 API key。
 - `demo`：立即体验，在临时仓库里实际执行测试，展示三类未完成事项。
 - `init`：在项目里创建验收清单，不覆盖已有文件。
 - `verify`：检查 Git 改动；`--run-tests` 实际运行指定测试；`--judge` 才会发送相关证据给 Jev。
 - `grep`：按自然语言条件筛选文本或 JSONL，输出原始记录和行号；需要 API key。
-- 当前是本地可运行预览，尚未发布 npm、部署新版官网或开放订阅。首版先验证每天能否帮助我们发现交付遗漏。
+- 通过 `npm install -g jevtool` 安装。
 
 MIT. Runs on Jev by TypeSafe. Not affiliated with TypeSafe AI.

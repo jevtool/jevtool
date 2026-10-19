@@ -34,14 +34,30 @@ export function createClient({ apiKey = process.env.TYPESAFE_API_KEY || process.
       let result;
       try { result = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
       catch { throw new Error('Jev returned invalid JSON.'); }
-      for (const id of Object.keys(questions)) {
-        const answer = result?.answers?.[id];
-        if (!answer || answer.type !== 'noul' || !Number.isFinite(answer.noul) || answer.noul < 0 || answer.noul > 1) {
-          throw new Error(`Jev returned an invalid or missing Noul answer for ${id}.`);
-        }
-      }
+      for (const [id, question] of Object.entries(questions)) validateAnswer(id, question, result?.answers?.[id]);
       if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model.');
       return result;
     }
   };
+}
+
+const isProbability = value => Number.isFinite(value) && value >= 0 && value <= 1;
+
+// Fail closed: every requested question must come back with an answer of its own type.
+export function validateAnswer(id, question, answer) {
+  const type = question?.type;
+  if (!answer || answer.type !== type) throw new Error(`Jev returned an invalid or missing ${type ?? 'unknown'} answer for ${id}.`);
+  if (type === 'noul') {
+    if (!isProbability(answer.noul)) throw new Error(`Jev returned an invalid or missing Noul answer for ${id}.`);
+  } else if (type === 'choice' || type === 'score') {
+    const probabilities = answer.probabilities;
+    if (!probabilities || typeof probabilities !== 'object' || !Object.values(probabilities).every(isProbability)) {
+      throw new Error(`Jev returned invalid probabilities for ${id}.`);
+    }
+    if (!isProbability(answer.confidence)) throw new Error(`Jev returned an invalid confidence for ${id}.`);
+    if (type === 'choice' && !(answer.choice in probabilities)) throw new Error(`Jev returned an unknown option for ${id}.`);
+    if (type === 'score' && !Number.isFinite(answer.score)) throw new Error(`Jev returned an invalid score for ${id}.`);
+  } else {
+    throw new Error(`Unsupported question type for ${id}: ${type}.`);
+  }
 }

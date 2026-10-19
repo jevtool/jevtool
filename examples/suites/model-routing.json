@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "name": "model-routing",
+  "description": "LLM apps: decide whether a request needs a small, mid or frontier model.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "difficulty": {
+      "type": "score",
+      "instructions": "How much reasoning does it take to do the task in `request` well?",
+      "criteria": [
+        "Trivial: a one-step lookup, translation, rewrite or format conversion with an obvious answer.",
+        "Routine: several steps of standard work a competent professional does without much thought, such as writing one function, one query, one page or one summary.",
+        "Hard: open-ended diagnosis or design across several systems, subtle concurrency or security issues, or long-horizon planning with trade-offs."
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "m1",
+      "state": {
+        "request": "Translate 'thank you for your order' into Spanish"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m2",
+      "state": {
+        "request": "What does HTTP status 404 mean?"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m3",
+      "state": {
+        "request": "Rename the variable `usr` to `user` in: const usr = getUser(); console.log(usr.name)"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m4",
+      "state": {
+        "request": "Fix the grammar: 'he go to school yesterday and buyed a apple'"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m5",
+      "state": {
+        "request": "Convert this JSON to YAML: {\"name\": \"app\", \"port\": 8080}"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m6",
+      "state": {
+        "request": "把这句话改得更礼貌一点：明天之前把文件发我"
+      },
+      "expect": {
+        "difficulty": 0
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "m7",
+      "state": {
+        "request": "Write a Python function that dedupes a list of dicts by 'email', keeping the newest by 'created_at'"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m8",
+      "state": {
+        "request": "Summarize this 3-page meeting transcript into action items with owners"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m9",
+      "state": {
+        "request": "Build a landing page for a yoga studio with pricing and a booking section"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m10",
+      "state": {
+        "request": "Write a SQL query for monthly active users from an events(user_id, ts) table"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m11",
+      "state": {
+        "request": "Draft a cold email to a VP of Engineering pitching our CI caching tool"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m12",
+      "state": {
+        "request": "写一个 Next.js 的 API 路由，接收表单提交并写入 Postgres"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "m13",
+      "state": {
+        "request": "Create a 10-slide deck about our Q3 results from these numbers"
+      },
+      "expect": {
+        "difficulty": 1
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m14",
+      "state": {
+        "request": "Our pods randomly get OOM-killed only in prod since the last deploy. Here are configs and logs for 3 services. Find the root cause."
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m15",
+      "state": {
+        "request": "Design a multi-tenant billing system with usage-based pricing, prepaid credits, refunds and idempotent Stripe webhooks"
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m16",
+      "state": {
+        "request": "Plan the migration of our 40k-line Express app from callbacks to async/await without changing behavior, including rollout and rollback"
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m17",
+      "state": {
+        "request": "Users sometimes get charged twice when they double-click checkout. The flow spans our API, a queue worker and the Stripe webhook handler. Find the race."
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "m18",
+      "state": {
+        "request": "设计一个支持百万并发的实时协作文档系统，说明一致性方案和各种取舍"
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "m19",
+      "state": {
+        "request": "Audit this Solidity lending contract for reentrancy and economic exploits"
+      },
+      "expect": {
+        "difficulty": 2
+      },
+      "tags": [
+        "en"
+      ]
+    }
+  ]
+}

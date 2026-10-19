@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "name": "entity-match",
+  "description": "Data cleaning: decide whether two messy records are the same company, person or product.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "same": {
+      "type": "noul",
+      "instructions": "Do `record_a` and `record_b` refer to the same real-world entity: the same company, the same person, or the same product variant?",
+      "criteria": {
+        "true": "same entity, despite differences in spelling, language, abbreviation or formatting",
+        "false": "different entities, including a parent vs a subsidiary, a different model or size, or a different branch location"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "e1",
+      "state": {
+        "record_a": {
+          "name": "Acme Corp.",
+          "city": "San Francisco, CA",
+          "site": "acme.com"
+        },
+        "record_b": {
+          "name": "ACME Corporation",
+          "city": "SF",
+          "site": "www.acme.com"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e2",
+      "state": {
+        "record_a": {
+          "name": "Delta Airlines",
+          "city": "Atlanta"
+        },
+        "record_b": {
+          "name": "Delta Faucet Company",
+          "city": "Indianapolis"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e3",
+      "state": {
+        "record_a": {
+          "name": "Apple iPhone 15 Pro 256GB Natural Titanium"
+        },
+        "record_b": {
+          "name": "iPhone 15 Pro (256 GB) - Natural Titanium, Apple"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e4",
+      "state": {
+        "record_a": {
+          "name": "Apple iPhone 15 Pro 256GB"
+        },
+        "record_b": {
+          "name": "Apple iPhone 15 Pro Max 256GB"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e5",
+      "state": {
+        "record_a": {
+          "name": "Dr. Robert Chen",
+          "org": "Stanford Health",
+          "specialty": "Cardiology"
+        },
+        "record_b": {
+          "name": "Bob Chen MD",
+          "org": "Stanford Medicine",
+          "specialty": "Cardiologist"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e6",
+      "state": {
+        "record_a": {
+          "name": "Robert Chen",
+          "org": "Chen Plumbing LLC",
+          "city": "Austin"
+        },
+        "record_b": {
+          "name": "Dr. Robert Chen",
+          "org": "Stanford Health"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e7",
+      "state": {
+        "record_a": {
+          "name": "Sony WH-1000XM5 Wireless Headphones, Black"
+        },
+        "record_b": {
+          "name": "Sony WH1000XM5/B Noise Canceling Headphones"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e8",
+      "state": {
+        "record_a": {
+          "name": "Sony WH-1000XM5"
+        },
+        "record_b": {
+          "name": "Sony WF-1000XM5 earbuds"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e9",
+      "state": {
+        "record_a": {
+          "name": "The Coca-Cola Company",
+          "ticker": "KO"
+        },
+        "record_b": {
+          "name": "Coca-Cola Europacific Partners",
+          "ticker": "CCEP"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e10",
+      "state": {
+        "record_a": {
+          "name": "Alphabet Inc.",
+          "hq": "Mountain View"
+        },
+        "record_b": {
+          "name": "Google LLC parent company",
+          "hq": "Mountain View, California"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e11",
+      "state": {
+        "record_a": {
+          "name": "Joe's Pizza",
+          "address": "7 Carmine St, New York"
+        },
+        "record_b": {
+          "name": "Joe's Pizza",
+          "address": "1435 Broadway, New York"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "e12",
+      "state": {
+        "record_a": {
+          "name": "北京字节跳动科技有限公司"
+        },
+        "record_b": {
+          "name": "ByteDance Ltd. (Beijing)"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "e13",
+      "state": {
+        "record_a": {
+          "name": "小米科技有限责任公司",
+          "city": "北京"
+        },
+        "record_b": {
+          "name": "小米汽车科技有限公司",
+          "city": "北京"
+        }
+      },
+      "expect": {
+        "same": false
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "e14",
+      "state": {
+        "record_a": {
+          "name": "Levi's 501 Original Fit Jeans, 32x32, Dark Stonewash"
+        },
+        "record_b": {
+          "name": "Levis 501 Original jeans W32 L32 dark stonewash"
+        }
+      },
+      "expect": {
+        "same": true
+      },
+      "tags": [
+        "en"
+      ]
+    }
+  ]
+}

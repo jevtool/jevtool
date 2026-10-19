@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "name": "rag-fact-check",
+  "description": "AI apps: check whether a source supports, contradicts or never mentions a generated claim.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "verdict": {
+      "type": "choice",
+      "instructions": "Compare `claim` with `source`. What does `source` say about `claim`?",
+      "criteria": {
+        "supported": "`source` states this, possibly in different words.",
+        "contradicted": "`source` states something incompatible with `claim`, such as a different number, scope or condition.",
+        "not_mentioned": "`source` neither states nor contradicts `claim`."
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "r1",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "Annual plans can be fully refunded within 30 days."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r2",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "Monthly plans can be refunded within 14 days."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r3",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "Refunds arrive within 5 to 10 business days."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r4",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "Refunds can be paid out to a different card if you ask support."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r5",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "If you cancel a monthly plan you lose access immediately."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r6",
+      "state": {
+        "source": "In the phase 3 trial, 1,200 adults with type 2 diabetes received the drug weekly for 52 weeks. Mean HbA1c fell by 1.8 percentage points versus 0.4 with placebo. Nausea was the most common side effect (21% vs 6%). The trial did not include patients under 18 or pregnant women.",
+        "claim": "The drug lowered HbA1c by 1.8 points in the trial."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r7",
+      "state": {
+        "source": "In the phase 3 trial, 1,200 adults with type 2 diabetes received the drug weekly for 52 weeks. Mean HbA1c fell by 1.8 percentage points versus 0.4 with placebo. Nausea was the most common side effect (21% vs 6%). The trial did not include patients under 18 or pregnant women.",
+        "claim": "The drug was shown to be safe for teenagers."
+      },
+      "expect": {
+        "verdict": "not_mentioned"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r8",
+      "state": {
+        "source": "In the phase 3 trial, 1,200 adults with type 2 diabetes received the drug weekly for 52 weeks. Mean HbA1c fell by 1.8 percentage points versus 0.4 with placebo. Nausea was the most common side effect (21% vs 6%). The trial did not include patients under 18 or pregnant women.",
+        "claim": "Nausea affected about one in five patients on the drug."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r9",
+      "state": {
+        "source": "In the phase 3 trial, 1,200 adults with type 2 diabetes received the drug weekly for 52 weeks. Mean HbA1c fell by 1.8 percentage points versus 0.4 with placebo. Nausea was the most common side effect (21% vs 6%). The trial did not include patients under 18 or pregnant women.",
+        "claim": "The trial lasted six months."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r10",
+      "state": {
+        "source": "In the phase 3 trial, 1,200 adults with type 2 diabetes received the drug weekly for 52 weeks. Mean HbA1c fell by 1.8 percentage points versus 0.4 with placebo. Nausea was the most common side effect (21% vs 6%). The trial did not include patients under 18 or pregnant women.",
+        "claim": "The drug also caused significant weight loss."
+      },
+      "expect": {
+        "verdict": "not_mentioned"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r11",
+      "state": {
+        "source": "Rate limits are applied per organization. The default is 600 requests per minute and 2 million tokens per minute. Requests above the limit receive HTTP 429 with a retry-after header. Enterprise plans can request higher limits through their account manager.",
+        "claim": "Going over the rate limit returns HTTP 429."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r12",
+      "state": {
+        "source": "Rate limits are applied per organization. The default is 600 requests per minute and 2 million tokens per minute. Requests above the limit receive HTTP 429 with a retry-after header. Enterprise plans can request higher limits through their account manager.",
+        "claim": "Rate limits are applied per API key."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r13",
+      "state": {
+        "source": "Rate limits are applied per organization. The default is 600 requests per minute and 2 million tokens per minute. Requests above the limit receive HTTP 429 with a retry-after header. Enterprise plans can request higher limits through their account manager.",
+        "claim": "Enterprise customers can get higher limits."
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r14",
+      "state": {
+        "source": "Rate limits are applied per organization. The default is 600 requests per minute and 2 million tokens per minute. Requests above the limit receive HTTP 429 with a retry-after header. Enterprise plans can request higher limits through their account manager.",
+        "claim": "The default limit is 1,000 requests per minute."
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "r15",
+      "state": {
+        "source": "Refund policy (updated March 2026). Annual plans can be refunded in full within 30 days of purchase. Monthly plans are not refundable, but you can cancel at any time and keep access until the end of the billing period. Refunds are issued to the original payment method within 5–10 business days.",
+        "claim": "年付方案在购买后30天内可以全额退款。"
+      },
+      "expect": {
+        "verdict": "supported"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "r16",
+      "state": {
+        "source": "Rate limits are applied per organization. The default is 600 requests per minute and 2 million tokens per minute. Requests above the limit receive HTTP 429 with a retry-after header. Enterprise plans can request higher limits through their account manager.",
+        "claim": "超过限额的请求会被自动排队，稍后执行。"
+      },
+      "expect": {
+        "verdict": "contradicted"
+      },
+      "tags": [
+        "zh"
+      ]
+    }
+  ]
+}

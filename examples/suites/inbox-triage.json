@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "name": "inbox-triage",
+  "description": "Personal: sort email into action, security, receipt, FYI, newsletter or spam.",
+  "model": "jev-1.13.0",
+  "target": 0.95,
+  "questions": {
+    "bucket": {
+      "type": "choice",
+      "instructions": "Where does `email` belong in the recipient's inbox?",
+      "criteria": {
+        "action": "The recipient personally needs to reply, pay, sign, decide or show up.",
+        "security": "A genuine account security notice from a real service, such as a new sign-in.",
+        "receipt": "Order confirmations, shipping updates, payment receipts.",
+        "fyi": "Information worth knowing that requires no action.",
+        "newsletter": "Subscribed newsletters and content digests.",
+        "spam": "Phishing, scams or unsolicited junk."
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "x1",
+      "state": {
+        "email": "From: landlord · Subject: Lease renewal · Please sign and return the renewal by Oct 31 or the unit goes back on the market."
+      },
+      "expect": {
+        "bucket": "action"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x2",
+      "state": {
+        "email": "From: Amazon · Your order of 'USB-C cable, 2-pack' has shipped and arrives Thursday."
+      },
+      "expect": {
+        "bucket": "receipt"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x3",
+      "state": {
+        "email": "From: Google · Security alert: new sign-in to your account from Windows, Lagos, Nigeria. Wasn't you? Review activity."
+      },
+      "expect": {
+        "bucket": "security"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x4",
+      "state": {
+        "email": "From: Morning Brew · Today: chips, rate cuts and a very confused llama."
+      },
+      "expect": {
+        "bucket": "newsletter"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x5",
+      "state": {
+        "email": "From: Mom · Dad's birthday dinner is Sunday at 6, can you bring dessert?"
+      },
+      "expect": {
+        "bucket": "action"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x6",
+      "state": {
+        "email": "From: Stripe · Receipt for your payment of $12.00 to Notion Labs."
+      },
+      "expect": {
+        "bucket": "receipt"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x7",
+      "state": {
+        "email": "From: team-updates · FYI: the office will be closed Monday for the holiday."
+      },
+      "expect": {
+        "bucket": "fyi"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x8",
+      "state": {
+        "email": "From: unknown · URGENT your account will be suspended, verify your password at secure-login-verify.co"
+      },
+      "expect": {
+        "bucket": "spam"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x9",
+      "state": {
+        "email": "From: Dentist · Reminder: you have a cleaning on Tuesday at 9:30. Reply C to confirm."
+      },
+      "expect": {
+        "bucket": "action"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x10",
+      "state": {
+        "email": "From: GitHub · [repo] Dependabot opened 3 pull requests."
+      },
+      "expect": {
+        "bucket": "fyi"
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x11",
+      "state": {
+        "email": "From: recruiter · Hi! Saw your profile, are you open to a quick chat about a Staff role?"
+      },
+      "expect": {
+        "bucket": [
+          "action",
+          "fyi"
+        ]
+      },
+      "tags": [
+        "en"
+      ]
+    },
+    {
+      "id": "x12",
+      "state": {
+        "email": "From: 招商银行 · 您尾号1234的信用卡本期账单已出，应还金额3,280元，到期还款日10月25日。"
+      },
+      "expect": {
+        "bucket": "action"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "x13",
+      "state": {
+        "email": "From: 少数派 · 本周精选：10 款值得一试的效率工具"
+      },
+      "expect": {
+        "bucket": "newsletter"
+      },
+      "tags": [
+        "zh"
+      ]
+    },
+    {
+      "id": "x14",
+      "state": {
+        "email": "From: Apple · 您的 Apple ID 已在新的设备上登录：iPhone 16，上海。"
+      },
+      "expect": {
+        "bucket": "security"
+      },
+      "tags": [
+        "zh"
+      ]
+    }
+  ]
+}
