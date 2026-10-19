@@ -1,5 +1,5 @@
 {
-  "name": "@jevtool/cli",
+  "name": "jevtool",
   "version": "0.2.0",
   "description": "Test Jev judgments against labeled cases, check agent deliveries, and filter records by meaning.",
   "type": "module",
