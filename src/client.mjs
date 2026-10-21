@@ -12,7 +12,9 @@ export function createClient({ apiKey = env.TYPESAFE_API_KEY || env.JEV_API_KEY,
     for (let attempt = 0; attempt < 2; attempt++) {
       let response;
       try {
-        response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'error',
+        // 'manual' rather than 'error': the Workers runtime rejects 'error'. A 3xx is
+        // then treated as a failure below, so credentials never follow a redirect.
+        response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'manual',
           headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
           body, signal: AbortSignal.timeout(timeoutMs) });
       } catch { throw new Error('Jev request failed or timed out. No semantic checks were approved.'); }
@@ -21,6 +23,10 @@ export function createClient({ apiKey = env.TYPESAFE_API_KEY || env.JEV_API_KEY,
         const retryAfter = Number(response.headers.get('retry-after') || 0);
         await sleep(Math.min(2000, Math.max(500, Number.isFinite(retryAfter) ? retryAfter * 1000 : 500)));
         continue;
+      }
+      if (response.status >= 300 && response.status < 400) {
+        await response.body?.cancel();
+        throw new Error('Jev endpoint redirected; refusing to follow with credentials. No semantic checks were approved.');
       }
       if (!response.ok) {
         await response.body?.cancel();

@@ -8,7 +8,7 @@ const good = { model: 'jev-fixture', answers: { yes: { type: 'noul', noul: 0.9 }
 test('client sends the official contract, pins model and forbids credential redirects', async () => {
   const judge = createClient({ apiKey: 'fixture-key', fetchImpl: async (url, options) => {
     assert.equal(url, 'https://api.typesafe.ai/v1/systemone');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.headers.Authorization, 'Bearer fixture-key');
     const body = JSON.parse(options.body);
     assert.equal(body.model, 'jev-1.13.0');
@@ -16,6 +16,11 @@ test('client sends the official contract, pins model and forbids credential redi
     return Response.json(good);
   } });
   assert.equal((await judge({ record: 'hello' }, questions)).answers.yes.noul, 0.9);
+});
+
+test('redirects are never followed with credentials', async () => {
+  const judge = createClient({ apiKey: 'fixture', fetchImpl: async () => new Response('', { status: 302, headers: { Location: 'https://evil.example/' } }) });
+  await assert.rejects(judge({}, questions), /redirected/);
 });
 
 test('client retries bounded rate limiting', async () => {
