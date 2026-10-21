@@ -12,7 +12,7 @@ import { demo } from '../src/demo.mjs';
 import { loadSuite, listExamples, evaluateSuite, evalExitCode } from '../src/eval.mjs';
 import { redact } from '../src/util.mjs';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const HELP = `jevtool ${VERSION} — test Jev judgments, check agent deliveries, filter by meaning
 
   jevtool eval <suite.json | example:NAME> [--model jev-1.13.0] [--compare jev-1.14.0]

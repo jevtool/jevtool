@@ -1,6 +1,6 @@
 {
   "name": "jevtool",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Test Jev judgments against labeled cases, check agent deliveries, and filter records by meaning.",
   "type": "module",
   "bin": {
@@ -43,5 +43,11 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    ".": "./src/eval.mjs",
+    "./eval-core": "./src/eval-core.mjs",
+    "./client": "./src/client.mjs",
+    "./package.json": "./package.json"
   }
 }

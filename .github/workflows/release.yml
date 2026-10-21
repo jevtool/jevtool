@@ -1,0 +1,32 @@
+name: Release
+
+# Publishes to npm when a GitHub release is published. The release tag must
+# equal "v" + package.json version. Requires the NPM_TOKEN repository secret
+# (an npm granular access token with publish rights for the jevtool package).
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - name: Tag must match package version
+        run: |
+          test "${{ github.event.release.tag_name }}" = "v$(node -p "require('./package.json').version")"
+      - run: npm test
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

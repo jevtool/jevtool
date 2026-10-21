@@ -1,12 +1,14 @@
 const ENDPOINT = 'https://api.typesafe.ai/v1/systemone';
 
-export function createClient({ apiKey = process.env.TYPESAFE_API_KEY || process.env.JEV_API_KEY,
-  model = process.env.JEV_MODEL || 'jev-1.13.0', fetchImpl = globalThis.fetch,
+const env = typeof process === 'object' && process?.env ? process.env : {};
+
+export function createClient({ apiKey = env.TYPESAFE_API_KEY || env.JEV_API_KEY,
+  model = env.JEV_MODEL || 'jev-1.13.0', fetchImpl = globalThis.fetch,
   timeoutMs = 15_000, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
   return async function judge(state, questions) {
     if (!apiKey) throw new Error('Set TYPESAFE_API_KEY to use Jev. No request was sent.');
     const body = JSON.stringify({ model, state, questions });
-    if (Buffer.byteLength(body) > 96 * 1024) throw new Error('Judgment context exceeds 96 KiB. Narrow the acceptance criteria or input.');
+    if (new TextEncoder().encode(body).byteLength > 96 * 1024) throw new Error('Judgment context exceeds 96 KiB. Narrow the acceptance criteria or input.');
     for (let attempt = 0; attempt < 2; attempt++) {
       let response;
       try {
@@ -26,13 +28,18 @@ export function createClient({ apiKey = process.env.TYPESAFE_API_KEY || process.
         throw new Error(`Jev returned HTTP ${response.status}. No semantic checks were approved.`);
       }
       const chunks = []; let bytes = 0;
-      for await (const chunk of response.body) {
-        bytes += chunk.length;
-        if (bytes > 512 * 1024) throw new Error('Jev response exceeds the response limit.');
-        chunks.push(chunk);
+      const reader = response.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytes += value.byteLength;
+        if (bytes > 512 * 1024) { await reader.cancel(); throw new Error('Jev response exceeds the response limit.'); }
+        chunks.push(value);
       }
+      const joined = new Uint8Array(bytes); let offset = 0;
+      for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.byteLength; }
       let result;
-      try { result = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+      try { result = JSON.parse(new TextDecoder().decode(joined)); }
       catch { throw new Error('Jev returned invalid JSON.'); }
       for (const [id, question] of Object.entries(questions)) validateAnswer(id, question, result?.answers?.[id]);
       if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model.');
