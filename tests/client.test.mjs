@@ -57,3 +57,33 @@ test('network failures cannot become successful judgments', async () => {
   const judge = createClient({ apiKey: 'fixture', fetchImpl: async () => { throw new Error('private diagnostic'); } });
   await assert.rejects(judge({}, questions), /No semantic checks were approved/);
 });
+
+test('openrouter provider uses the Decisions endpoint, its own key and model IDs', async () => {
+  const judge = createClient({ provider: 'openrouter', apiKey: 'or-key', model: 'cloudflare/clef-flash', fetchImpl: async (url, options) => {
+    assert.equal(url, 'https://openrouter.ai/api/alpha/decisions');
+    assert.equal(options.headers.Authorization, 'Bearer or-key');
+    assert.equal(JSON.parse(options.body).model, 'cloudflare/clef-flash');
+    return Response.json({ ...good, usage: { input_tokens: 10, cost: 0.00001 } });
+  } });
+  assert.equal((await judge({}, questions)).usage.cost, 0.00001);
+});
+
+test('a self-hosted base URL targets /v1/systemone and needs no key', async () => {
+  const judge = createClient({ baseUrl: 'http://localhost:8000/', apiKey: '', fetchImpl: async (url, options) => {
+    assert.equal(url, 'http://localhost:8000/v1/systemone');
+    assert.equal(options.headers.Authorization, undefined);
+    return Response.json(good);
+  } });
+  await judge({}, questions);
+});
+
+test('unknown providers and malformed base URLs are rejected up front', () => {
+  assert.throws(() => createClient({ provider: 'nope' }), /Unknown provider/);
+  assert.throws(() => createClient({ baseUrl: 'ftp://x' }), /http/);
+  assert.throws(() => createClient({ baseUrl: 'not a url' }), /Invalid base URL/);
+});
+
+test('a missing OpenRouter key names the right variable', async () => {
+  const judge = createClient({ provider: 'openrouter', apiKey: '', fetchImpl: async () => { throw new Error('should not call'); } });
+  await assert.rejects(judge({}, questions), /OPENROUTER_API_KEY.*No request was sent/);
+});

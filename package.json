@@ -1,7 +1,7 @@
 {
   "name": "jevtool",
-  "version": "0.2.2",
-  "description": "Test Jev judgments against labeled cases, check agent deliveries, and filter records by meaning.",
+  "version": "0.3.0",
+  "description": "Test System One decision models (Jev and every alternative) against your own labeled cases, check agent deliveries, and filter records by meaning.",
   "type": "module",
   "bin": {
     "jevtool": "bin/jevtool.mjs"
@@ -23,15 +23,18 @@
   },
   "license": "MIT",
   "keywords": [
-    "jev",
-    "typesafe",
-    "system-one",
-    "llm",
-    "eval",
+    "agents",
+    "benchmark",
     "classification",
     "claude-code",
-    "agents",
-    "cli"
+    "cli",
+    "decision-models",
+    "eval",
+    "jev",
+    "llm",
+    "openrouter",
+    "system-one",
+    "typesafe"
   ],
   "homepage": "https://jevtool.dev",
   "repository": {

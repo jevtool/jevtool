@@ -58,7 +58,21 @@ Ten example suites ship with the package: support triage, chat inbound guard, mo
 | `2` | Some requests failed; results are partial |
 | `3` | Configuration error or every request failed |
 
-**Data sent by `eval`:** each case's `state` and the suite's questions go to TypeSafe. Labels stay local.
+### Compare decision models
+
+Jev is no longer the only System One model. Every model on [OpenRouter's Decisions API](https://openrouter.ai/models?output_modalities=decisions) (Jev, Clef, Solar Decide, Mercury Decide, Kev, Decider and more) takes the same request, so one key compares them all on your own cases:
+
+```sh
+export OPENROUTER_API_KEY=...
+jevtool eval my-suite.json --provider openrouter \
+  --model typesafe/jev-1.13 --compare inception/mercury-decide,cloudflare/clef-flash,jaredpalmer/kev-4b
+```
+
+Self-hosted open models that serve TypeSafe's `/v1/systemone` path (Kev, Laya, decider, …) work with `--base-url http://localhost:8000`; no key is sent unless `TYPESAFE_API_KEY` is set. When the provider reports the billed cost per call (OpenRouter does), the report uses it; otherwise it estimates from Jev's list price for Jev models only.
+
+Public results across models: [github.com/jevtool/benchmarks](https://github.com/jevtool/benchmarks).
+
+**Data sent by `eval`:** each case's `state` and the suite's questions go to the provider you choose. Labels stay local.
 
 ## Check an agent delivery
 

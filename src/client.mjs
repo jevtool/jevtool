@@ -1,13 +1,38 @@
-const ENDPOINT = 'https://api.typesafe.ai/v1/systemone';
-
 const env = typeof process === 'object' && process?.env ? process.env : {};
 
-export function createClient({ apiKey = env.TYPESAFE_API_KEY || env.JEV_API_KEY,
-  model = env.JEV_MODEL || 'jev-1.13.0', fetchImpl = globalThis.fetch,
+// Every provider speaks the same System One wire: { model, state, questions } in,
+// { model, answers, usage } out. Only the endpoint and the key differ.
+export const PROVIDERS = {
+  typesafe: { endpoint: 'https://api.typesafe.ai/v1/systemone', keyEnv: ['TYPESAFE_API_KEY', 'JEV_API_KEY'],
+    defaultModel: 'jev-1.13.0', keyHelp: 'Create a key at https://console.typesafe.ai and set TYPESAFE_API_KEY' },
+  openrouter: { endpoint: 'https://openrouter.ai/api/alpha/decisions', keyEnv: ['OPENROUTER_API_KEY'],
+    defaultModel: 'typesafe/jev-1.13', keyHelp: 'Create a key at https://openrouter.ai/keys and set OPENROUTER_API_KEY' },
+};
+
+export function resolveProvider({ provider = env.JEVTOOL_PROVIDER || 'typesafe', baseUrl = env.TYPESAFE_BASE_URL } = {}) {
+  const spec = PROVIDERS[provider];
+  if (!spec) throw new Error(`Unknown provider "${provider}". Use ${Object.keys(PROVIDERS).join(' or ')}.`);
+  if (baseUrl) {
+    let url;
+    try { url = new URL(baseUrl); } catch { throw new Error(`Invalid base URL: ${baseUrl}`); }
+    if (!['https:', 'http:'].includes(url.protocol)) throw new Error('The base URL must start with http:// or https://.');
+    // Self-hosted servers (Kev, Laya, decider, …) expose the TypeSafe path.
+    return { ...spec, name: provider, endpoint: url.href.replace(/\/+$/, '') + '/v1/systemone', selfHosted: true };
+  }
+  return { ...spec, name: provider, selfHosted: false };
+}
+
+export const apiKeyFor = spec => spec.keyEnv.map(name => env[name]).find(Boolean) || '';
+
+export function createClient({ provider, baseUrl, apiKey, model, fetchImpl = globalThis.fetch,
   timeoutMs = 15_000, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)) } = {}) {
+  const spec = resolveProvider({ provider, baseUrl });
+  const ENDPOINT = spec.endpoint;
+  const key = apiKey ?? apiKeyFor(spec);
+  const resolvedModel = model ?? env.JEV_MODEL ?? spec.defaultModel;
   return async function judge(state, questions) {
-    if (!apiKey) throw new Error('Set TYPESAFE_API_KEY to use Jev. No request was sent.');
-    const body = JSON.stringify({ model, state, questions });
+    if (!key && !spec.selfHosted) throw new Error(`No ${spec.keyEnv[0]} found. ${spec.keyHelp}. No request was sent.`);
+    const body = JSON.stringify({ model: resolvedModel, state, questions });
     if (new TextEncoder().encode(body).byteLength > 96 * 1024) throw new Error('Judgment context exceeds 96 KiB. Narrow the acceptance criteria or input.');
     for (let attempt = 0; attempt < 2; attempt++) {
       let response;
@@ -15,7 +40,7 @@ export function createClient({ apiKey = env.TYPESAFE_API_KEY || env.JEV_API_KEY,
         // 'manual' rather than 'error': the Workers runtime rejects 'error'. A 3xx is
         // then treated as a failure below, so credentials never follow a redirect.
         response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'manual',
-          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), 'Content-Type': 'application/json' },
           body, signal: AbortSignal.timeout(timeoutMs) });
       } catch { throw new Error('Jev request failed or timed out. No semantic checks were approved.'); }
       if ([429, 529].includes(response.status) && attempt === 0) {

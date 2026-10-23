@@ -113,3 +113,15 @@ test('cli lists and saves examples without an API key', async t => {
   assert.equal(JSON.parse(await readFile(join(dir, 'mine.json'), 'utf8')).name, 'inbox-triage');
   await assert.rejects(exec('node', [BIN, 'eval', 'example:inbox-triage'], { cwd: dir, env }), error => error.code === 3 && /TYPESAFE_API_KEY/.test(error.stderr));
 });
+
+test('reported per-call cost wins over the list-price estimate; unknown models get no estimate', async () => {
+  const withCost = model => async (state, questions) => {
+    const r = await judgeFor('m1')(state, questions);
+    return model === 'priced' ? { ...r, usage: { input_tokens: 100, cost: 0.00002 } } : r;
+  };
+  const report = await evaluateSuite({ suite, models: ['priced', 'other/unpriced', 'typesafe/jev-1.13'], judgeFor: withCost });
+  const [priced, unpriced, jev] = report.runs;
+  assert.deepEqual([priced.costSource, priced.estCostPer1kCalls], ['reported', 0.02]);
+  assert.deepEqual([unpriced.costSource, unpriced.estCostPer1kCalls], [null, null]);
+  assert.equal(jev.costSource, 'jev-list-price');
+});

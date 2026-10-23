@@ -93,12 +93,13 @@ async function runModel({ suite, judgeFor, model, concurrency, orderCheck, now }
         orderFlips = Object.entries(suite.questions).filter(([qid, q]) => q.type === 'choice' && again.answers[qid].choice !== response.answers[qid].choice).map(([qid]) => qid);
       } catch { orderFlips = null; }
     }
-    return { id, tags: c.tags ?? [], ms, inputTokens: response.usage?.input_tokens ?? null, resolvedModel: response.model, answers, orderFlips };
+    return { id, tags: c.tags ?? [], ms, inputTokens: response.usage?.input_tokens ?? null,
+      cost: Number.isFinite(response.usage?.cost) ? response.usage.cost : null, resolvedModel: response.model, answers, orderFlips };
   });
   return results;
 }
 
-function summarize(suite, results, target) {
+function summarize(suite, results, target, model) {
   const ok = results.filter(r => !r.error);
   const questions = {};
   for (const [qid, q] of Object.entries(suite.questions)) {
@@ -131,9 +132,23 @@ function summarize(suite, results, target) {
     orderChecked: ok.some(r => r.orderFlips !== null && r.orderFlips !== undefined),
     latencyMs: { p50: quantile(latencies, 0.5), p95: quantile(latencies, 0.95) },
     avgInputTokens: avgTokens === null ? null : Math.round(avgTokens),
-    estCostPer1kCalls: avgTokens === null ? null : +(avgTokens * 1000 * PRICE_PER_INPUT_TOKEN).toFixed(4),
+    ...costSummary(ok, avgTokens, model),
     questions,
   };
+}
+
+// Prefer the cost the provider reports per call (OpenRouter does); fall back to
+// Jev's list price only for Jev models, where that price is known.
+function costSummary(ok, avgTokens, model) {
+  const costs = ok.map(r => r.cost);
+  if (ok.length && costs.every(Number.isFinite)) {
+    const perCall = costs.reduce((a, b) => a + b, 0) / costs.length;
+    return { estCostPer1kCalls: +(perCall * 1000).toFixed(4), costSource: 'reported' };
+  }
+  if (avgTokens !== null && /jev/i.test(model)) {
+    return { estCostPer1kCalls: +(avgTokens * 1000 * PRICE_PER_INPUT_TOKEN).toFixed(4), costSource: 'jev-list-price' };
+  }
+  return { estCostPer1kCalls: null, costSource: null };
 }
 
 function compareRuns(suite, baseRows, otherRows) {
@@ -156,7 +171,7 @@ export async function evaluateSuite({ suite, judgeFor, models, concurrency = 4, 
   const runs = [];
   for (const model of models) {
     const rows = await runModel({ suite, judgeFor, model, concurrency, orderCheck, now });
-    runs.push({ model, rows, summary: summarize(suite, rows, goal) });
+    runs.push({ model, rows, summary: summarize(suite, rows, goal, model) });
   }
   const comparisons = runs.slice(1).map(r => ({ from: runs[0].model, to: r.model, flips: compareRuns(suite, runs[0].rows, r.rows) }));
   const failing = minAccuracy === undefined ? [] : runs.flatMap(r => Object.entries(r.summary.questions)

@@ -39,7 +39,7 @@ export function formatEval(report) {
       lines.push(`  ${qid.padEnd(18)} ${q.type.padEnd(6)} ${pct(q.accuracy).padStart(4)} (${q.correct}/${q.scored})  ${auto}${tags ? `  [${tags}]` : ''}`);
       if (q.orderFlips?.length) lines.push(`  ${''.padEnd(25)} option order changed the answer on: ${q.orderFlips.join(', ')}`);
     }
-    const cost = run.estCostPer1kCalls === null ? '' : ` · ${run.avgInputTokens} input tokens/call · ~$${run.estCostPer1kCalls} per 1k calls`;
+    const cost = run.estCostPer1kCalls === null ? '' : ` · ${run.avgInputTokens} input tokens/call · ${run.costSource === 'reported' ? '' : '~'}$${run.estCostPer1kCalls} per 1k calls${run.costSource === 'reported' ? ' (billed)' : ' at Jev list price'}`;
     lines.push(`  latency p50 ${Math.round(run.latencyMs.p50 ?? 0)} ms · p95 ${Math.round(run.latencyMs.p95 ?? 0)} ms${cost}`);
     if (run.errors.length) lines.push(`  ${run.errors.length} request(s) failed: ${run.errors.slice(0, 3).map(e => `${e.id} ${e.error}`).join('; ')}`);
     const misses = Object.entries(run.questions).flatMap(([qid, q]) => q.misses.map(m => ({ qid, ...m })));

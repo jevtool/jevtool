@@ -5,19 +5,20 @@ import { writeFile } from 'node:fs/promises';
 import { repositoryRoot } from '../src/git.mjs';
 import { initManifest, loadManifest } from '../src/manifest.mjs';
 import { verify, verifyExitCode } from '../src/verify.mjs';
-import { createClient } from '../src/client.mjs';
+import { createClient, resolveProvider, apiKeyFor } from '../src/client.mjs';
 import { parseRecords, readRecords, semanticGrep } from '../src/grep.mjs';
 import { formatVerify, formatGrep, formatEval } from '../src/format.mjs';
 import { demo } from '../src/demo.mjs';
 import { loadSuite, listExamples, evaluateSuite, evalExitCode } from '../src/eval.mjs';
 import { redact } from '../src/util.mjs';
 
-const VERSION = '0.2.2';
+const VERSION = '0.3.0';
 const HELP = `jevtool ${VERSION} — test Jev judgments, check agent deliveries, filter by meaning
 
   jevtool eval <suite.json | example:NAME> [--model jev-1.13.0] [--compare jev-1.14.0]
                [--order-check] [--target 0.95] [--min-accuracy 0.9] [--concurrency 4]
                [--json] [--output report.json]
+               [--provider typesafe|openrouter] [--base-url http://localhost:8000]
   jevtool eval --examples
   jevtool eval example:NAME --save my-suite.json
 
@@ -30,8 +31,11 @@ const HELP = `jevtool ${VERSION} — test Jev judgments, check agent deliveries,
 verify: collects evidence locally. --run-tests executes configured argv commands;
         --judge sends selected, redacted diffs and test output to TypeSafe.
 grep: sends records to TypeSafe. Set TYPESAFE_API_KEY (or JEV_API_KEY).
-eval: runs every labeled case through Jev and reports accuracy, misses, a suggested
-      confidence cutoff, and which answers change between model versions.
+eval: runs every labeled case through a decision model and reports accuracy, misses,
+      a suggested confidence cutoff, and which answers change between models.
+      --provider openrouter compares any System One model on OpenRouter (Jev, Clef,
+      Solar Decide, Kev, …) with one OPENROUTER_API_KEY; --base-url targets a
+      self-hosted /v1/systemone server.
 Exit codes: eval 0 passed / 1 below --min-accuracy / 2 some requests failed / 3 error.
             verify 0 supported / 1 failed / 2 review / 3 operational error.
             grep 0 matches / 1 no matches / 2 review / 3 operational error.
@@ -47,7 +51,7 @@ async function main() {
     output: { type: 'string' }, format: { type: 'string' },
     model: { type: 'string' }, compare: { type: 'string' }, 'order-check': { type: 'boolean' },
     target: { type: 'string' }, 'min-accuracy': { type: 'string' }, concurrency: { type: 'string' },
-    examples: { type: 'boolean' }, save: { type: 'string' },
+    examples: { type: 'boolean' }, save: { type: 'string' }, provider: { type: 'string' }, 'base-url': { type: 'string' },
   } });
   if (values.version) { process.stdout.write(`${VERSION}\n`); return; }
   if (values.help || !positionals.length) { process.stdout.write(HELP); return; }
@@ -55,7 +59,7 @@ async function main() {
   const allowed = {
     init: ['task'], verify: ['file', 'base', 'run-tests', 'judge', 'threshold', 'json', 'output'],
     grep: ['format', 'threshold', 'json'], demo: ['json'],
-    eval: ['model', 'compare', 'order-check', 'target', 'min-accuracy', 'concurrency', 'json', 'output', 'examples', 'save'],
+    eval: ['model', 'compare', 'order-check', 'target', 'min-accuracy', 'concurrency', 'json', 'output', 'examples', 'save', 'provider', 'base-url'],
   };
   if (!allowed[command]) throw new Error(`Unknown command: ${command}. Run jevtool --help.`);
   for (const key of Object.keys(values)) if (!allowed[command].includes(key)) throw new Error(`--${key} is not supported for ${command}.`);
@@ -119,15 +123,18 @@ async function runEval(args, values) {
     process.stdout.write(`Saved ${values.save}. Edit the questions and cases, then run jevtool eval ${values.save}\n`);
     return;
   }
-  if (!process.env.TYPESAFE_API_KEY && !process.env.JEV_API_KEY) {
-    throw new Error('No TypeSafe API key found, so no cases were sent. Create a key at https://console.typesafe.ai and set TYPESAFE_API_KEY, then rerun.');
+  const spec = resolveProvider({ provider: values.provider, baseUrl: values['base-url'] });
+  if (!spec.selfHosted && !apiKeyFor(spec)) {
+    throw new Error(`No ${spec.keyEnv[0]} found, so no cases were sent. ${spec.keyHelp}, then rerun.`);
   }
-  const primary = values.model ?? suite.model ?? process.env.JEV_MODEL ?? 'jev-1.13.0';
+  // A suite's model is written for one provider; other providers use their own default.
+  const suiteModel = spec.name === 'typesafe' ? suite.model : undefined;
+  const primary = values.model ?? suiteModel ?? process.env.JEV_MODEL ?? spec.defaultModel;
   const models = [primary, ...(values.compare ? values.compare.split(',').map(m => m.trim()).filter(Boolean) : [])];
   const concurrency = values.concurrency === undefined ? 4 : Number(values.concurrency);
   const report = await evaluateSuite({ suite, models, concurrency, orderCheck: values['order-check'],
     target: fraction(values.target, 'target'), minAccuracy: fraction(values['min-accuracy'], 'min-accuracy'),
-    judgeFor: model => createClient({ model }) });
+    judgeFor: model => createClient({ model, provider: spec.name, baseUrl: values['base-url'] }) });
   if (values.output) await writeFile(resolve(process.cwd(), values.output), JSON.stringify(report, null, 2) + '\n', { mode: 0o600 });
   process.stdout.write(values.json ? JSON.stringify(report, null, 2) + '\n' : formatEval(report));
   process.exitCode = evalExitCode(report);
