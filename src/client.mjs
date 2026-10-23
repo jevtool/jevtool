@@ -42,7 +42,7 @@ export function createClient({ provider, baseUrl, apiKey, model, fetchImpl = glo
         response = await fetchImpl(ENDPOINT, { method: 'POST', redirect: 'manual',
           headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), 'Content-Type': 'application/json' },
           body, signal: AbortSignal.timeout(timeoutMs) });
-      } catch { throw new Error('Jev request failed or timed out. No semantic checks were approved.'); }
+      } catch { throw new Error('The model request failed or timed out. No semantic checks were approved.'); }
       if ([429, 529].includes(response.status) && attempt === 0) {
         await response.body?.cancel();
         const retryAfter = Number(response.headers.get('retry-after') || 0);
@@ -51,12 +51,12 @@ export function createClient({ provider, baseUrl, apiKey, model, fetchImpl = glo
       }
       if (response.status >= 300 && response.status < 400) {
         await response.body?.cancel();
-        throw new Error('Jev endpoint redirected; refusing to follow with credentials. No semantic checks were approved.');
+        throw new Error('The provider endpoint redirected; refusing to follow with credentials. No semantic checks were approved.');
       }
       if (!response.ok) {
         await response.body?.cancel();
         // Do not echo provider error bodies, which can contain request data.
-        throw new Error(`Jev returned HTTP ${response.status}. No semantic checks were approved.`);
+        throw new Error(`The provider returned HTTP ${response.status}. No semantic checks were approved.`);
       }
       const chunks = []; let bytes = 0;
       const reader = response.body.getReader();
@@ -64,16 +64,16 @@ export function createClient({ provider, baseUrl, apiKey, model, fetchImpl = glo
         const { done, value } = await reader.read();
         if (done) break;
         bytes += value.byteLength;
-        if (bytes > 512 * 1024) { await reader.cancel(); throw new Error('Jev response exceeds the response limit.'); }
+        if (bytes > 512 * 1024) { await reader.cancel(); throw new Error('The response exceeds the response limit.'); }
         chunks.push(value);
       }
       const joined = new Uint8Array(bytes); let offset = 0;
       for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.byteLength; }
       let result;
       try { result = JSON.parse(new TextDecoder().decode(joined)); }
-      catch { throw new Error('Jev returned invalid JSON.'); }
+      catch { throw new Error('The provider returned invalid JSON.'); }
       for (const [id, question] of Object.entries(questions)) validateAnswer(id, question, result?.answers?.[id]);
-      if (typeof result.model !== 'string' || !result.model) throw new Error('Jev response is missing the resolved model.');
+      if (typeof result.model !== 'string' || !result.model) throw new Error('The response is missing the resolved model.');
       return result;
     }
   };
@@ -84,17 +84,17 @@ const isProbability = value => Number.isFinite(value) && value >= 0 && value <= 
 // Fail closed: every requested question must come back with an answer of its own type.
 export function validateAnswer(id, question, answer) {
   const type = question?.type;
-  if (!answer || answer.type !== type) throw new Error(`Jev returned an invalid or missing ${type ?? 'unknown'} answer for ${id}.`);
+  if (!answer || answer.type !== type) throw new Error(`The model returned an invalid or missing ${type ?? 'unknown'} answer for ${id}.`);
   if (type === 'noul') {
-    if (!isProbability(answer.noul)) throw new Error(`Jev returned an invalid or missing Noul answer for ${id}.`);
+    if (!isProbability(answer.noul)) throw new Error(`The model returned an invalid or missing Noul answer for ${id}.`);
   } else if (type === 'choice' || type === 'score') {
     const probabilities = answer.probabilities;
     if (!probabilities || typeof probabilities !== 'object' || !Object.values(probabilities).every(isProbability)) {
-      throw new Error(`Jev returned invalid probabilities for ${id}.`);
+      throw new Error(`The model returned invalid probabilities for ${id}.`);
     }
-    if (!isProbability(answer.confidence)) throw new Error(`Jev returned an invalid confidence for ${id}.`);
-    if (type === 'choice' && !(answer.choice in probabilities)) throw new Error(`Jev returned an unknown option for ${id}.`);
-    if (type === 'score' && !Number.isFinite(answer.score)) throw new Error(`Jev returned an invalid score for ${id}.`);
+    if (!isProbability(answer.confidence)) throw new Error(`The model returned an invalid confidence for ${id}.`);
+    if (type === 'choice' && !(answer.choice in probabilities)) throw new Error(`The model returned an unknown option for ${id}.`);
+    if (type === 'score' && !Number.isFinite(answer.score)) throw new Error(`The model returned an invalid score for ${id}.`);
   } else {
     throw new Error(`Unsupported question type for ${id}: ${type}.`);
   }

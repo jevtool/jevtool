@@ -1,6 +1,6 @@
 {
   "name": "jevtool",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Test System One decision models (Jev and every alternative) against your own labeled cases, check agent deliveries, and filter records by meaning.",
   "type": "module",
   "bin": {
